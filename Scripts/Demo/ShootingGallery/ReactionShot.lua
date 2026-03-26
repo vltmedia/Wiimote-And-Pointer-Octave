@@ -32,7 +32,6 @@ function ReactionShot:TryConnect()
 	end
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
-		Log.Debug("ReactionShot: HIT")
 			self.shootingTargetScript:Hit(player)
 			self.container:SetActive(false)
 			self.container:SetVisible(false)
@@ -44,7 +43,6 @@ function ReactionShot:TryConnect()
 	end)
 
 	self.interactable.OnHoverStart:Connect(self, function(player)
-		Log.Debug("ReactionShot: HOVER : " .. self.itemName)
 
 	end)
 

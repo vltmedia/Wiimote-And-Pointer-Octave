@@ -110,36 +110,27 @@ function InteractableManager:Tick()
 end
 
 function InteractableManager:GetPointerPositionForPlayer(player)
-	-- Try InputManager first
-	if self.InputManager and self.InputManager.GetPlayerPosition then
-		local x, y = self.InputManager:GetPlayerPosition(player)
-		if x and y then
-			return x, y
+	-- Get position from InputManager's registered pointer (same as GameCursor)
+	local inputMgr = InputManager.Instance
+	if inputMgr then
+		local pointers = inputMgr.InputPointers
+		if pointers then
+			for _, pointer in ipairs(pointers) do
+				if pointer.player == player and pointer.GetPointerPosition then
+					local x, y = pointer:GetPointerPosition()
+					if x and y then
+						return x, y
+					end
+				end
+			end
 		end
 	end
 
-	-- Fallback: use Input API directly for player 1 (mouse/touch)
-	if player == 1 then
-		-- Try pointer position (touch/Wiimote)
-		if Input.GetPointerPosition then
-			local x, y = Input.GetPointerPosition(player)
-			if x and y and (x ~= 0 or y ~= 0) then
-				return x, y
-			end
-		end
-		-- Try mouse position
-		if Input.GetMousePosition then
-			local x, y = Input.GetMousePosition()
-			if x and y then
-				-- Check if Y needs to be flipped (screen coords vs widget coords)
-				if Renderer and Renderer.GetResolution then
-					local res = Renderer.GetResolution()
-					if res and res.Y then
-						y = res.Y - y
-					end
-				end
-				return x, y
-			end
+	-- Fallback: use Input API directly
+	if Input.GetPointerPosition then
+		local x, y = Input.GetPointerPosition(player)
+		if x and y and (x ~= 0 or y ~= 0) then
+			return x, y
 		end
 	end
 
