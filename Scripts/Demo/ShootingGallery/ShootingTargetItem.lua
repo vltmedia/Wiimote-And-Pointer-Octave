@@ -31,6 +31,17 @@ function ShootingTargetItem:Start()
 		self.manager:Register(self)
 	end
 
+	-- Find parent sequence by traversing up hierarchy
+	local parent = self:GetParent()
+	while parent do
+		if parent.RegisterTarget then
+			parent:RegisterTarget(self)
+			Log.Debug("ShootingTargetItem: Registered with sequence " .. (parent.GetName and parent:GetName() or "unknown"))
+			break
+		end
+		parent = parent:GetParent()
+	end
+
 	-- Connect to animation finished signals
 	if self.animateIn and self.animateIn.OnFinished then
 		self.animateIn.OnFinished:Connect(self, function()
@@ -134,6 +145,7 @@ end
 ---@param player number
 function ShootingTargetItem:Hit(player)
 	-- Only allow hits when active
+	Log.Debug("TargetItem: State is: " .. self.state)
 	if self.state ~= "active" then return end
 	if self.collected then return end
 
@@ -144,6 +156,7 @@ function ShootingTargetItem:Hit(player)
 	if self.manager and self.manager.Hit then
 		self.manager:Hit(player, self)
 	end
+	Log.Debug("TargetItem: PlayAnimateOut ")
 
 	-- Play out animation
 	self:PlayAnimateOut()

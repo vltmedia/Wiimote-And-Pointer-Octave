@@ -13,6 +13,7 @@ function ShootingGallerySequence:Create()
 	end
 	self.sequenceGameTime = self.maxTime
 	self.state = "idle"
+	self.registeredTargets = {}
 
 	self.OnSequenceStarted = Signal:Create()
 	self.OnSequenceFinished = Signal:Create()
@@ -24,6 +25,13 @@ end
 
 function ShootingGallerySequence:Start()
 	self.state = "idle"
+	local targetCount = self.targets and #self.targets or 0
+	Log.Debug("Sequence:Start - targets=" .. targetCount .. " maxTime=" .. (self.maxTime or 0))
+end
+
+function ShootingGallerySequence:RegisterTarget(targetScript)
+	table.insert(self.registeredTargets, targetScript)
+	Log.Debug("Sequence:RegisterTarget - now have " .. #self.registeredTargets .. " registered targets")
 end
 
 function ShootingGallerySequence:ResetForGame()
@@ -33,24 +41,34 @@ end
 
 --- Start the sequence
 function ShootingGallerySequence:Play()
+	Log.Debug("Sequence:Play called - state=" .. self.state)
 	if self.state == "idle" then
 		self.OnSequenceStarted:Emit()
 		self:PlayAnimateIn()
+	else
+		Log.Debug("Sequence:Play skipped - not idle")
 	end
 end
 
 function ShootingGallerySequence:PlayAnimateIn()
-	if self.state ~= "idle" then return end
+	Log.Debug("Sequence:PlayAnimateIn called - state=" .. self.state)
+	if self.state ~= "idle" then
+		Log.Debug("Sequence:PlayAnimateIn skipped - not idle")
+		return
+	end
 
 	self.state = "animatingIn"
 	self.OnAnimateInStarted:Emit()
 
 	-- Animate targets in
+	Log.Debug("Sequence:PlayAnimateIn calling AnimateInTargets")
 	self:AnimateInTargets()
 
 	if self.animateIn and self.animateIn.Play then
+		Log.Debug("Sequence:PlayAnimateIn playing animateIn timeline")
 		self.animateIn:Play()
 	else
+		Log.Debug("Sequence:PlayAnimateIn no timeline, calling OnAnimationInFinished")
 		self:OnAnimationInFinished()
 	end
 end
@@ -80,12 +98,25 @@ function ShootingGallerySequence:Tick(deltaTime)
 end
 
 function ShootingGallerySequence:AnimateInTargets()
-	if not self.targets then return end
-	for _, target in ipairs(self.targets) do
+	Log.Debug("Sequence:AnimateInTargets called")
+
+	-- Use registered targets (scripts that registered themselves)
+	local targets = self.registeredTargets
+	if not targets or #targets == 0 then
+		Log.Debug("Sequence:AnimateInTargets - no registered targets!")
+		return
+	end
+
+	Log.Debug("Sequence:AnimateInTargets - " .. #targets .. " registered targets")
+	for i, target in ipairs(targets) do
+		local name = target.GetName and target:GetName() or "unknown"
+		Log.Debug("Sequence:AnimateInTargets - target " .. i .. ": " .. name)
+
 		if target.ResetForGame then
 			target:ResetForGame()
 		end
 		if target.PlayAnimateIn then
+			Log.Debug("Sequence:AnimateInTargets - calling PlayAnimateIn on " .. name)
 			target:PlayAnimateIn()
 		end
 	end
@@ -93,9 +124,11 @@ end
 
 --- Call this when animateIn timeline finishes (connect to timeline's OnFinished)
 function ShootingGallerySequence:OnAnimationInFinished()
+	Log.Debug("Sequence:OnAnimationInFinished called - state=" .. self.state)
 	if self.state ~= "animatingIn" then return end
 
 	self.state = "playing"
+	Log.Debug("Sequence:OnAnimationInFinished - now playing")
 	self.OnAnimateInFinished:Emit()
 end
 

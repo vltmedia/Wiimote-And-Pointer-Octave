@@ -33,8 +33,9 @@ function ReactionShot:TryConnect()
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
 			self.shootingTargetScript:Hit(player)
-			self.container:SetActive(false)
-			self.container:SetVisible(false)
+			-- self.container:SetActive(false)
+			-- self.container:SetVisible(false)
+			Audio.PlaySound2D(self.shotSound, 1,1,0,false,0)
 
 	end)
 
@@ -66,5 +67,6 @@ function ReactionShot:GatherProperties()
 		{ name = "container", type = DatumType.Node },
 		{ name = "shootingTargetScript", type = DatumType.Node },
 		{ name = "itemName", type = DatumType.String },
+		{ name = "shotSound", type = DatumType.Asset },
 	}
 end
