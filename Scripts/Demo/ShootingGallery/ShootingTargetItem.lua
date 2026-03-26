@@ -6,7 +6,8 @@
 ---@field world World
 ---@field animateIn Node
 ---@field animateOut Node
----@field dataAsset Asset
+---@field score Integer
+---@field health Integer
 ---@field state string
 ShootingTargetItem = {}
 
@@ -43,22 +44,19 @@ function ShootingTargetItem:Start()
 	end
 end
 function ShootingTargetItem:GetScore()
-	return self.dataAsset:Get("score")
+	return self.score or 100
 end
 
 function ShootingTargetItem:GetTargetName()
-	return self.dataAsset:Get("targetName")
+	return self.targetName or "Target"
 end
 
 function ShootingTargetItem:GetHealth()
-	return self.dataAsset:Get("health")
+	return self.health or 1
 end
 
 function ShootingTargetItem:GetDescription()
-	return self.dataAsset:Get("description")
-end
-function ShootingTargetItem:GetHitSound()
-	return self.dataAsset:Get("hitSound")
+	return self.description or ""
 end
 
 function ShootingTargetItem:PlayAnimateIn()
@@ -125,7 +123,9 @@ function ShootingTargetItem:IsCollected()
 end
 function ShootingTargetItem:GatherProperties()
 	return {
-		{name="dataAsset", type=DatumType.Asset },
+		{name="targetName", type=DatumType.String },
+		{name="score", type=DatumType.Integer },
+		{name="health", type=DatumType.Integer },
 		{name="animateIn", type=DatumType.Node },
 		{name="animateOut", type=DatumType.Node },
 	}
