@@ -32,9 +32,8 @@ function ReactionShot:TryConnect()
 	end
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
-		if button == Gamepad.A then
+		Log.Debug("HIT")
 			self.shootingTargetScript:Hit(player)
-		end
 	end)
 
 	self.interactable.OnReleased:Connect(self, function(player, button)
@@ -42,6 +41,8 @@ function ReactionShot:TryConnect()
 	end)
 
 	self.interactable.OnHoverStart:Connect(self, function(player)
+		Log.Debug("HOVER")
+
 	end)
 
 	self.interactable.OnHoverEnd:Connect(self, function(player)

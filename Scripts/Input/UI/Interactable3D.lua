@@ -27,6 +27,11 @@ function Interactable3D:TryRegister()
 	if InteractableManager.Instance and InteractableManager.Instance.RegisterInteractable3D then
 		InteractableManager.Instance:RegisterInteractable3D(self)
 		self.registered = true
+		-- Auto-enable collision on node3d so raycast can hit it
+		local node3d = self:GetNode3D()
+		if node3d and node3d.EnableCollision then
+			node3d:EnableCollision(true)
+		end
 	end
 end
 

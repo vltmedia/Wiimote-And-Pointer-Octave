@@ -75,9 +75,11 @@ function InteractableManager:Tick()
 		self:TryConnectSignals()
 	end
 
+	-- Get camera directly from world
 	local camera = nil
-	if self.InputManager and self.InputManager.GetWorldCamera then
-		camera = self.InputManager:GetWorldCamera()
+	local world = Engine.GetWorld(0)
+	if world and world.GetActiveCamera then
+		camera = world:GetActiveCamera()
 	end
 
 	-- Poll direct input as fallback (mouse/keyboard in editor)
@@ -207,10 +209,10 @@ function InteractableManager:HandleGamepadPress(player, pointerPos, button)
 
 
 	-- 3D objects
-	---@type Camera3D
 	local camera = nil
-	if self.InputManager and self.InputManager.GetWorldCamera then
-		camera = self.InputManager:GetWorldCamera()
+	local world = Engine.GetWorld(0)
+	if world and world.GetActiveCamera then
+		camera = world:GetActiveCamera()
 	end
 
 	if camera and #self.interactables3D > 0 then
@@ -252,8 +254,9 @@ function InteractableManager:HandlePointerPress(player, pointerPos)
 
 	-- 3D objects
 	local camera = nil
-	if self.InputManager and self.InputManager.GetWorldCamera then
-		camera = self.InputManager:GetWorldCamera()
+	local world = Engine.GetWorld(0)
+	if world and world.GetActiveCamera then
+		camera = world:GetActiveCamera()
 	end
 
 	if camera and self.interactables3D and #self.interactables3D > 0 then
