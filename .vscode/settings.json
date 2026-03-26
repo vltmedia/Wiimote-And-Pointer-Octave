@@ -1,0 +1,11 @@
+{
+	"workbench.colorCustomizations": {
+		"activityBar.background": "#1E2257",
+		"titleBar.activeBackground": "#2A307A",
+		"titleBar.activeForeground": "#FBFCFE"
+	},
+  "Lua.workspace.library": [
+    "C:/Octave/Engine/Generated/LuaMeta"
+],
+"window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: master]"
+}

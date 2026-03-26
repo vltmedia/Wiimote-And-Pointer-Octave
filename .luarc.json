@@ -1,0 +1,21 @@
+{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "workspace": {
+        "library": [
+            "Scripts",
+            "C:/Octave/Engine/Generated/LuaMeta"
+        ]
+    },
+    "diagnostics": {
+        "globals": [
+            "World",
+            "Log",
+            "UI",
+            "Signal",
+            "Input",
+            "Gamepad",
+            "DatumType",
+            "WiimoteManager"
+        ]
+    }
+}

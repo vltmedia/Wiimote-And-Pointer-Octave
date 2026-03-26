@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(find M:/Projects/Octave/Engine -name *.xml -path */UI/* -type f)",
+      "Bash(find M:/Projects/Octave/Engine -name *Scene*Lua* -o -name *World*Lua*)"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "version": 1,
+    "selectedProfileIndex": 0,
+    "nextProfileId": 2,
+    "currentTargetProfileId": 1,
+    "profiles": [
+        {
+            "id": 1,
+            "name": "Wii",
+            "platform": 4,
+            "embedded": true,
+            "outputDirectory": "",
+            "useDocker": false,
+            "openDirectoryOnFinish": false
+        }
+    ]
+}

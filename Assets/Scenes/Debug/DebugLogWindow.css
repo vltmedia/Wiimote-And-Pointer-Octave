@@ -1,0 +1,129 @@
+/* Root container */
+.log-root {
+	anchor: full-stretch;
+}
+
+/* Main panel - semi-transparent, bottom-left */
+.log-panel {
+	anchor: bottom-left;
+	width: 70%;
+	height: 40%;
+	left: 16px;
+	top: -60%;
+	background-color: rgba(20, 20, 30, 0.85);
+}
+
+/* Title bar */
+.title-bar {
+	anchor: top-stretch;
+	height: 28px;
+	background-color: rgba(40, 40, 60, 0.95);
+}
+
+.title-text {
+	anchor: center-left;
+	left: 8px;
+	color: #ffffff;
+	font-size: 14px;
+	top: -10px;
+}
+
+.controls {
+	anchor: center-right;
+	left: -4px;
+	width: 72px;
+	height: 24px;
+}
+
+.control-btn {
+	width: 32px;
+	height: 20px;
+	background-color: #445566;
+	--hovered-color: #556677;
+	--pressed-color: #334455;
+	color: #ffffff;
+	font-size: 10px;
+	text-align: center;
+}
+
+.close-btn {
+	background-color: #664444;
+	--hovered-color: #775555;
+	--pressed-color: #553333;
+}
+
+/* Filter row */
+.filter-row {
+	anchor: top-left;
+	top: 32px;
+	left: 8px;
+	height: 22px;
+	width: 150px;
+}
+
+.filter-btn {
+	width: 46px;
+	height: 18px;
+	background-color: #333344;
+	--hovered-color: #444455;
+	--pressed-color: #222233;
+	color: #666666;
+	font-size: 10px;
+	text-align: center;
+}
+
+.filter-debug {
+	background-color: #224422;
+	--hovered-color: #335533;
+	--pressed-color: #113311;
+	color: #88cc88;
+}
+
+.filter-warning {
+	background-color: #444422;
+	--hovered-color: #555533;
+	--pressed-color: #333311;
+	color: #cccc66;
+}
+
+.filter-error {
+	background-color: #442222;
+	--hovered-color: #553333;
+	--pressed-color: #331111;
+	color: #cc6666;
+}
+
+/* Scrollable log area */
+.log-scroll-area {
+	anchor: full-stretch;
+	top: 150px;
+	left: 4px;
+	right: 4px;
+}
+
+.log-entries {
+	anchor: top-stretch;
+}
+
+/* Log entry text */
+.log-entry-text {
+	anchor: top-stretch;
+	height: 14px;
+	font-size: 11px;
+	color: #aaaaaa;
+	left: 4px;
+}
+
+/* Status bar */
+.status-bar {
+	anchor: bottom-stretch;
+	height: 18px;
+	background-color: rgba(30, 30, 45, 0.9);
+}
+
+.status-text {
+	anchor: center-left;
+	left: 8px;
+	color: #666666;
+	font-size: 10px;
+}

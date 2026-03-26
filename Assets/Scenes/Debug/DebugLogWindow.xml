@@ -1,0 +1,56 @@
+<ui>
+	<link href="./DebugLogWindow.css" />
+
+	<div id="debug-log-root" class="log-root">
+		<div id="log-panel" class="log-panel">
+
+			<!-- Title bar -->
+			<div class="title-bar">
+				<text class="title-text">Debug Log</text>
+				<flex class="controls" direction="row" spacing="4">
+					<button id="btn-clear" class="control-btn">CLR</button>
+					<button id="btn-close" class="control-btn close-btn">X</button>
+				</flex>
+			</div>
+
+			<!-- Filter buttons -->
+			<flex id="filter-row" class="filter-row" direction="row" spacing="4">
+				<button id="btn-filter-debug" class="filter-btn filter-debug">DBG</button>
+				<button id="btn-filter-warning" class="filter-btn filter-warning">WRN</button>
+				<button id="btn-filter-error" class="filter-btn filter-error">ERR</button>
+			</flex>
+
+			<!-- Log entries (pre-allocated for Wii performance) -->
+			<div id="log-scroll-area" class="log-scroll-area">
+				<flex id="log-entries" class="log-entries" direction="column" spacing="1">
+					<text id="log-0" class="log-entry-text"></text>
+					<text id="log-1" class="log-entry-text"></text>
+					<text id="log-2" class="log-entry-text"></text>
+					<text id="log-3" class="log-entry-text"></text>
+					<text id="log-4" class="log-entry-text"></text>
+					<text id="log-5" class="log-entry-text"></text>
+					<text id="log-6" class="log-entry-text"></text>
+					<text id="log-7" class="log-entry-text"></text>
+					<text id="log-8" class="log-entry-text"></text>
+					<text id="log-9" class="log-entry-text"></text>
+					<text id="log-10" class="log-entry-text"></text>
+					<text id="log-11" class="log-entry-text"></text>
+					<text id="log-12" class="log-entry-text"></text>
+					<text id="log-13" class="log-entry-text"></text>
+					<text id="log-14" class="log-entry-text"></text>
+					<text id="log-15" class="log-entry-text"></text>
+					<text id="log-16" class="log-entry-text"></text>
+					<text id="log-17" class="log-entry-text"></text>
+					<text id="log-18" class="log-entry-text"></text>
+					<text id="log-19" class="log-entry-text"></text>
+				</flex>
+			</div>
+
+			<!-- Status bar -->
+			<div class="status-bar">
+				<text id="status-text" class="status-text">{{logCount}} entries</text>
+			</div>
+
+		</div>
+	</div>
+</ui>
