@@ -32,8 +32,11 @@ function ReactionShot:TryConnect()
 	end
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
-		Log.Debug("HIT")
+		Log.Debug("ReactionShot: HIT")
 			self.shootingTargetScript:Hit(player)
+			self.container:SetActive(false)
+			self.container:SetVisible(false)
+
 	end)
 
 	self.interactable.OnReleased:Connect(self, function(player, button)
@@ -41,7 +44,7 @@ function ReactionShot:TryConnect()
 	end)
 
 	self.interactable.OnHoverStart:Connect(self, function(player)
-		Log.Debug("HOVER")
+		Log.Debug("ReactionShot: HOVER : " .. self.itemName)
 
 	end)
 
@@ -62,6 +65,8 @@ end
 
 function ReactionShot:GatherProperties()
 	return {
-		{ name = "shootingTargetScript", type = DatumType.Node }
+		{ name = "container", type = DatumType.Node },
+		{ name = "shootingTargetScript", type = DatumType.Node },
+		{ name = "itemName", type = DatumType.String },
 	}
 end
