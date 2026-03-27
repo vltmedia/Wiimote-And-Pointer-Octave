@@ -21,7 +21,6 @@ end
 
 --- Called by ShootingGalleryGameManager when game ends
 function ShootingGalleryEndGame:OnGameEnded()
-	Log.Debug("ShootingGalleryEndGame: Game ended, showing results")
 
 	-- Show results panel
 	if self.resultsPanel then
@@ -53,7 +52,6 @@ function ShootingGalleryEndGame:DisplayResults()
 	end
 
 	if winner then
-		Log.Debug("ShootingGalleryEndGame: Winner is " .. winner.name .. " with " .. winner.score .. " points")
 	end
 end
 
@@ -87,7 +85,6 @@ function ShootingGalleryEndGame:PlayAgain()
 	end
 
 	self.OnPlayAgain:Emit()
-	Log.Debug("ShootingGalleryEndGame: Playing again")
 end
 
 function ShootingGalleryEndGame:GatherProperties()

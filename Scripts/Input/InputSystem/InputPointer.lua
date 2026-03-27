@@ -25,7 +25,6 @@ end
 function InputPointer:Start()
 	-- Runtime-only: registration with manager
 	self.registered = false
-	Log.Debug("Pointer Started for player " .. self.player)
 	self:TryRegister()
 end
 
@@ -39,7 +38,6 @@ function InputPointer:TryRegister()
 	if self.manager and self.manager.RegisterInputPointer then
 		self.manager:RegisterInputPointer(self)
 		self.registered = true
-		Log.Debug("Registered Pointer with Manager")
 	end
 end
 

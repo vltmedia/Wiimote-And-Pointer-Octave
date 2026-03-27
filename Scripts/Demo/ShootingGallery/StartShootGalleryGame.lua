@@ -27,11 +27,9 @@ function StartShootGalleryGame:TryConnect()
 	end
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
-		Log.Debug("Closing Start Window")
 		self:StartGame()
 	end)
 	self.interactable.OnHoverStart:Connect(self, function(player, button)
-		Log.Debug("OnHoverStart Window")
 	end)
 
 	self.connected = true

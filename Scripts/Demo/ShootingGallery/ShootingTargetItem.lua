@@ -55,7 +55,11 @@ function ShootingTargetItem:Start()
 end
 
 function ShootingTargetItem:GetScore()
-	return self.score or 100
+	local scoreValue = tonumber(self.score)
+	if scoreValue and scoreValue > 0 then
+		return scoreValue
+	end
+	return 100
 end
 
 function ShootingTargetItem:GetTargetName()
@@ -133,8 +137,8 @@ end
 function ShootingTargetItem:GatherProperties()
 	return {
 		{ name = "targetName", type = DatumType.String },
-		{ name = "score", type = DatumType.Integer },
-		{ name = "health", type = DatumType.Integer },
+		{ name = "score", type = DatumType.Integer, default = 100 },
+		{ name = "health", type = DatumType.Integer, default = 1 },
 		{ name = "animateIn", type = DatumType.Node },
 		{ name = "animateOut", type = DatumType.Node },
 	}
@@ -145,8 +149,14 @@ function ShootingTargetItem:Hit(player)
 	if self.state ~= "active" then return end
 	if self.collected then return end
 
+	-- Ensure player is a number (default to 1 if invalid)
+	if type(player) ~= "number" then
+		player = 1
+	end
+
 	self.collected = true
-	self.OnHit:Emit(player)
+
+	self.OnHit:Emit(player, self.score)
 
 	if self.manager and self.manager.Hit then
 		self.manager:Hit(player, self)

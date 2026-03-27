@@ -48,7 +48,6 @@ function InputManager:Start()
 		InputManager.Instance = self
 	end
 	Renderer.EnableConsole(true)
-	Log.Debug("Inputmote Manager Started")
 end
 
 function InputManager:Tick()

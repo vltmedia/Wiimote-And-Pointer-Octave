@@ -28,7 +28,6 @@ function GameCursor:TryConnect()
 	if self.manager then
 		if self:ConnectPlayerPointer() then
 			self.connected = true
-			Log.Debug("GameCursor: Connected to InputManager")
 			return true
 		end
 	end
@@ -58,7 +57,6 @@ function GameCursor:ConnectPlayerPointer()
 		return false
 	end
 
-	Log.Debug("GameCursor: Connected to player pointer for player " .. self.player)
 
 	if self.textName then
 		self.textName:SetText(string.format("Player %d", self.player))
@@ -67,14 +65,12 @@ function GameCursor:ConnectPlayerPointer()
 	self.playerPointer.OnPointingStarted:Connect(self, function(player, pointerX, pointerY)
 		if player == self.player then
 			self.visible = true
-			Log.Debug("GameCursor: Player " .. player .. " pointing started")
 		end
 	end)
 
 	self.playerPointer.OnPointingStopped:Connect(self, function(player, pointerX, pointerY)
 		if player == self.player then
 			self.visible = false
-			Log.Debug("GameCursor: Player " .. player .. " pointing stopped")
 		end
 	end)
 

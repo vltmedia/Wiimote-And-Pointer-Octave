@@ -37,7 +37,6 @@ function InteractableManager:TryConnectSignals()
 		end)
 
 		self.signalsConnected = true
-		Log.Debug("InteractableManager: Connected to InputManager signals")
 	end
 end
 

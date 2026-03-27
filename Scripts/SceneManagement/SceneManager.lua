@@ -41,12 +41,10 @@ function SceneManager:LoadSceneAdditive(scenePath, sceneName, position)
 
 	-- Check if already loaded
 	if self.loadedScenes[sceneName] then
-		Log.Warning("SceneManager: Scene '" .. sceneName .. "' is already loaded")
 		return false
 	end
 
 	self.OnSceneLoadRequested:Emit(sceneName)
-	Log.Debug("SceneManager: Loading scene '" .. sceneName .. "'")
 
 	-- Load the scene asset
 	local sceneAsset = LoadAsset(scenePath)
@@ -68,7 +66,6 @@ function SceneManager:LoadSceneAdditive(scenePath, sceneName, position)
 			path = scenePath
 		}
 		self.OnSceneLoaded:Emit(sceneName, sceneRoot)
-		Log.Debug("SceneManager: Scene '" .. sceneName .. "' loaded")
 		return true
 	else
 		Log.Error("SceneManager: Failed to spawn scene '" .. sceneName .. "'")
@@ -102,7 +99,6 @@ function SceneManager:UnloadScene(sceneName)
 
 	self.loadedScenes[sceneName] = nil
 	self.OnSceneUnloaded:Emit(sceneName)
-	Log.Debug("SceneManager: Scene '" .. sceneName .. "' unloaded")
 	return true
 end
 
@@ -118,7 +114,6 @@ function SceneManager:UnloadAllScenes()
 	end
 
 	self.OnAllScenesUnloaded:Emit()
-	Log.Debug("SceneManager: All scenes unloaded")
 end
 
 --- Check if a scene is loaded

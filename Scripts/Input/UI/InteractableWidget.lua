@@ -33,7 +33,6 @@ function InteractableWidget:TryRegister()
 	if InteractableManager.Instance and InteractableManager.Instance.RegisterInteractable then
 		InteractableManager.Instance:RegisterInteractable(self)
 		self.registered = true
-		Log.Debug("Interactable Widget Registered")
 	end
 end
 

@@ -40,7 +40,6 @@ function WindowWidget:TryRegister()
 	self.registeredName = name
 	self.registered = true
 
-	Log.Debug("WindowWidget: '" .. name .. "' registered with WindowManager")
 end
 
 --- Called by WindowManager when this window is opened
