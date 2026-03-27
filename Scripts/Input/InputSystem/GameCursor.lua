@@ -100,13 +100,7 @@ function GameCursor:Tick()
 		local isPointing = self.playerPointer:GetIsPointing()
 
 		-- Debug text
-		if self.textName then
-			self.textName:SetText(string.format("P%d: %d,%d %s",
-				self.player,
-				x or 0,
-				y or 0,
-				isPointing and "ON" or "OFF"))
-		end
+		
 		
 		if self.showDebug == true then Log.Debug(string.format("GameCursor Tick - Player %d: Position (%d, %d), Pointing: %s",
 			self.player,
