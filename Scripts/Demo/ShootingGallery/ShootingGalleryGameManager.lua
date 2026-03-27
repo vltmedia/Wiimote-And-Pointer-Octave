@@ -3,6 +3,7 @@
 ---@field countdown Countdown
 ---@field endGameHandler Node
 ---@field state string
+---@field timelinePlayer TimelinePlayer
 ---@field currentSequenceIndex number
 ---@field sortedSequences ShootingGallerySequence[]
 ShootingGalleryGameManager = {}
@@ -22,7 +23,11 @@ end
 
 function ShootingGalleryGameManager:Start()
 	ShootingGalleryGameManager.Instance = self
-
+	if self.timelinePlayer then
+		self.timelinePlayer:ConnectSignal("OnFinished", self, function()
+			Log.Debug("ShootingGalleryGameManager: TimelinePlayer finished")
+		end)
+	end
 	-- Sort sequences by order
 	self:SortSequences()
 
@@ -34,11 +39,19 @@ function ShootingGalleryGameManager:Start()
 	end
 
 	-- Connect to each sequence's finished signal
-	for _, sequence in ipairs(self.sortedSequences) do
+	for i, sequence in ipairs(self.sortedSequences) do
+		local seqName = sequence.GetName and sequence:GetName() or "unknown"
+		local hasSignal = sequence.OnSequenceFinished and "yes" or "no"
+		Log.Debug("GameManager: Sequence " .. i .. " (" .. seqName .. ") OnSequenceFinished=" .. hasSignal)
+
 		if sequence.OnSequenceFinished then
 			sequence.OnSequenceFinished:Connect(self, function()
+				Log.Debug("GameManager: OnSequenceFinished signal received!")
 				self:OnCurrentSequenceFinished()
 			end)
+			Log.Debug("GameManager: Connected to sequence " .. i .. " OnSequenceFinished")
+		else
+			Log.Warning("GameManager: Sequence " .. i .. " has no OnSequenceFinished signal!")
 		end
 	end
 
@@ -87,6 +100,13 @@ function ShootingGalleryGameManager:Run()
 	end
 end
 
+function ShootingGalleryGameManager:PlayTimeline(timeline)
+	if self.timelinePlayer then
+		self.timelinePlayer:SetTimeline(timeline)
+		self.timelinePlayer:Play()
+	end
+end
+
 function ShootingGalleryGameManager:OnCountdownComplete()
 	if self.state ~= "countdown" then return end
 
@@ -107,16 +127,24 @@ function ShootingGalleryGameManager:PlayCurrentSequence()
 		return
 	end
 
+	local seqName = sequence.GetName and sequence:GetName() or "unknown"
+	local seqState = sequence.state or "nil"
 	self.OnSequenceChanged:Emit(self.currentSequenceIndex, sequence)
-	Log.Debug("ShootingGalleryGameManager: Playing sequence " .. self.currentSequenceIndex)
+	Log.Debug("ShootingGalleryGameManager: Playing sequence " .. self.currentSequenceIndex .. " (" .. seqName .. ") state=" .. seqState)
 
 	if sequence.Play then
 		sequence:Play()
+	else
+		Log.Warning("ShootingGalleryGameManager: Sequence has no Play method!")
 	end
 end
 
 function ShootingGalleryGameManager:OnCurrentSequenceFinished()
-	if self.state ~= "playing" then return end
+	Log.Debug("GameManager:OnCurrentSequenceFinished called, state=" .. self.state)
+	if self.state ~= "playing" then
+		Log.Debug("GameManager:OnCurrentSequenceFinished skipped - not playing")
+		return
+	end
 
 	Log.Debug("ShootingGalleryGameManager: Sequence " .. self.currentSequenceIndex .. " finished")
 
@@ -198,5 +226,6 @@ function ShootingGalleryGameManager:GatherProperties()
 		{ name = "sequences", type = DatumType.Node, array = true },
 		{ name = "countdown", type = DatumType.Node },
 		{ name = "endGameHandler", type = DatumType.Node },
+		{name="timelinePlayer", type=DatumType.Node },
 	}
 end

@@ -37,6 +37,8 @@ function AnimateScaleRotate:Play()
 		self.animating = true
 		self.lerpValue = 0
 		self.runtimeValue = 0
+		-- Apply start transform immediately to prevent flash
+		self:ApplyTransform(0)
 	end
 end
 

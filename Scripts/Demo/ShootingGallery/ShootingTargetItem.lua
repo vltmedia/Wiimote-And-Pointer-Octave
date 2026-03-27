@@ -42,16 +42,25 @@ function ShootingTargetItem:Start()
 		parent = parent:GetParent()
 	end
 
-	-- Connect to animation finished signals
+	-- Connect to animation finished signals (Lua script signals use .OnFinished:Connect)
+	local name = self.GetName and self:GetName() or "unknown"
 	if self.animateIn and self.animateIn.OnFinished then
 		self.animateIn.OnFinished:Connect(self, function()
+			Log.Debug("TargetItem [" .. name .. "]: animateIn OnFinished")
 			self:OnAnimateInComplete()
 		end)
+		Log.Debug("TargetItem [" .. name .. "]: Connected to animateIn OnFinished")
+	else
+		Log.Debug("TargetItem [" .. name .. "]: No animateIn node or signal")
 	end
 	if self.animateOut and self.animateOut.OnFinished then
 		self.animateOut.OnFinished:Connect(self, function()
+			Log.Debug("TargetItem [" .. name .. "]: animateOut OnFinished")
 			self:OnAnimateOutComplete()
 		end)
+		Log.Debug("TargetItem [" .. name .. "]: Connected to animateOut OnFinished")
+	else
+		Log.Debug("TargetItem [" .. name .. "]: No animateOut node or signal")
 	end
 end
 function ShootingTargetItem:GetScore()
@@ -71,15 +80,21 @@ function ShootingTargetItem:GetDescription()
 end
 
 function ShootingTargetItem:PlayAnimateIn()
-	if self.state ~= "hidden" then return end
+	local name = self.GetName and self:GetName() or "unknown"
+	Log.Debug("TargetItem:PlayAnimateIn [" .. name .. "] state=" .. self.state)
+	if self.state ~= "hidden" then
+		Log.Debug("TargetItem:PlayAnimateIn [" .. name .. "] skipped - wrong state")
+		return
+	end
 
 	self.state = "animatingIn"
 	self.OnAnimateInStarted:Emit()
 
-	if self.animateIn and self.animateIn.Play then
+	if self.animateIn then
+		Log.Debug("TargetItem:PlayAnimateIn [" .. name .. "] playing animateIn")
 		self.animateIn:Play()
 	else
-		-- No animation, go straight to active
+		Log.Debug("TargetItem:PlayAnimateIn [" .. name .. "] no animateIn, completing immediately")
 		self:OnAnimateInComplete()
 	end
 end
@@ -92,23 +107,35 @@ function ShootingTargetItem:OnAnimateInComplete()
 end
 
 function ShootingTargetItem:PlayAnimateOut()
-	if self.state ~= "active" and self.state ~= "animatingIn" then return end
+	local name = self.GetName and self:GetName() or "unknown"
+	Log.Debug("TargetItem:PlayAnimateOut [" .. name .. "] state=" .. self.state)
+	if self.state ~= "active" and self.state ~= "animatingIn" then
+		Log.Debug("TargetItem:PlayAnimateOut [" .. name .. "] skipped - wrong state")
+		return
+	end
 
 	self.state = "animatingOut"
 	self.OnAnimateOutStarted:Emit()
 
-	if self.animateOut and self.animateOut.Play then
+	if self.animateOut then
+		Log.Debug("TargetItem:PlayAnimateOut [" .. name .. "] playing animateOut")
 		self.animateOut:Play()
 	else
-		-- No animation, go straight to collected
+		Log.Debug("TargetItem:PlayAnimateOut [" .. name .. "] no animateOut, completing immediately")
 		self:OnAnimateOutComplete()
 	end
 end
 
 function ShootingTargetItem:OnAnimateOutComplete()
-	if self.state ~= "animatingOut" then return end
+	local name = self.GetName and self:GetName() or "unknown"
+	Log.Debug("TargetItem:OnAnimateOutComplete [" .. name .. "] state=" .. self.state)
+	if self.state ~= "animatingOut" then
+		Log.Debug("TargetItem:OnAnimateOutComplete [" .. name .. "] skipped - wrong state")
+		return
+	end
 
 	self.state = "collected"
+	Log.Debug("TargetItem:OnAnimateOutComplete [" .. name .. "] now collected")
 	self.OnAnimateOutFinished:Emit()
 end
 

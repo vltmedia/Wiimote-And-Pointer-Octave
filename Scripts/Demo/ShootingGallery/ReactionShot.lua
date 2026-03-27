@@ -14,7 +14,7 @@ function ReactionShot:Start()
 	self:TryConnect()
 end
 
-function ReactionShot:Tick()
+function ReactionShot:Tick(deltaTime)
 	if not self.connected then
 		self:TryConnect()
 	end

@@ -14,6 +14,7 @@ function ShootingGallerySequence:Create()
 	self.sequenceGameTime = self.maxTime
 	self.state = "idle"
 	self.registeredTargets = {}
+	self.currentTimeline = nil  -- tracks which timeline is playing ("in" or "out")
 
 	self.OnSequenceStarted = Signal:Create()
 	self.OnSequenceFinished = Signal:Create()
@@ -23,10 +24,49 @@ function ShootingGallerySequence:Create()
 	self.OnAnimateOutFinished = Signal:Create()
 end
 
+function ShootingGallerySequence:GetTimelinePlayer()
+	local mgr = ShootingGalleryGameManager.Instance
+	return mgr and mgr.timelinePlayer or nil
+end
+
 function ShootingGallerySequence:Start()
 	self.state = "idle"
 	local targetCount = self.targets and #self.targets or 0
-	Log.Debug("Sequence:Start - targets=" .. targetCount .. " maxTime=" .. (self.maxTime or 0))
+
+	-- Connect to timeline player from GameManager if using timeline assets
+	local timelinePlayer = self:GetTimelinePlayer()
+	if timelinePlayer then
+		timelinePlayer:ConnectSignal("OnFinished", self, function()
+			Log.Debug("Sequence: TimelinePlayer finished, currentTimeline=" .. (self.currentTimeline or "nil"))
+			if self.currentTimeline == "in" then
+				self:OnAnimationInFinished()
+			elseif self.currentTimeline == "out" then
+				self:OnAnimationOutFinished()
+			end
+			self.currentTimeline = nil
+		end)
+	end
+
+	-- Connect to animation node finished signals (fallback - Lua scripts use .OnFinished:Connect)
+	local name = self.GetName and self:GetName() or "unknown"
+	if self.animateIn and self.animateIn.OnFinished then
+		self.animateIn.OnFinished:Connect(self, function()
+			Log.Debug("Sequence [" .. name .. "]: animateIn OnFinished fired")
+			self:OnAnimationInFinished()
+		end)
+		Log.Debug("Sequence [" .. name .. "]: Connected to animateIn OnFinished")
+	else
+		Log.Debug("Sequence [" .. name .. "]: No animateIn node or signal")
+	end
+	if self.animateOut and self.animateOut.OnFinished then
+		self.animateOut.OnFinished:Connect(self, function()
+			Log.Debug("Sequence [" .. name .. "]: animateOut OnFinished fired")
+			self:OnAnimationOutFinished()
+		end)
+		Log.Debug("Sequence [" .. name .. "]: Connected to animateOut OnFinished")
+	else
+		Log.Debug("Sequence [" .. name .. "]: No animateOut node or signal")
+	end
 end
 
 function ShootingGallerySequence:RegisterTarget(targetScript)
@@ -41,12 +81,13 @@ end
 
 --- Start the sequence
 function ShootingGallerySequence:Play()
-	Log.Debug("Sequence:Play called - state=" .. self.state)
+	local name = self.GetName and self:GetName() or "unknown"
+	Log.Debug("Sequence:Play [" .. name .. "] called - state=" .. self.state)
 	if self.state == "idle" then
 		self.OnSequenceStarted:Emit()
 		self:PlayAnimateIn()
 	else
-		Log.Debug("Sequence:Play skipped - not idle")
+		Log.Debug("Sequence:Play [" .. name .. "] skipped - not idle")
 	end
 end
 
@@ -60,12 +101,15 @@ function ShootingGallerySequence:PlayAnimateIn()
 	self.state = "animatingIn"
 	self.OnAnimateInStarted:Emit()
 
-	-- Animate targets in
-	Log.Debug("Sequence:PlayAnimateIn calling AnimateInTargets")
-	self:AnimateInTargets()
-
-	if self.animateIn and self.animateIn.Play then
-		Log.Debug("Sequence:PlayAnimateIn playing animateIn timeline")
+	-- Priority: timelineIn asset > animateIn node > immediate finish
+	local timelinePlayer = self:GetTimelinePlayer()
+	if self.timelineIn and timelinePlayer then
+		Log.Debug("Sequence:PlayAnimateIn playing timelineIn asset")
+		self.currentTimeline = "in"
+		timelinePlayer:SetTimeline(self.timelineIn)
+		timelinePlayer:Play()
+	elseif self.animateIn and self.animateIn.Play then
+		Log.Debug("Sequence:PlayAnimateIn playing animateIn node")
 		self.animateIn:Play()
 	else
 		Log.Debug("Sequence:PlayAnimateIn no timeline, calling OnAnimationInFinished")
@@ -74,20 +118,42 @@ function ShootingGallerySequence:PlayAnimateIn()
 end
 
 function ShootingGallerySequence:PlayAnimateOut()
-	if self.state ~= "waitingOut" then return end
+	Log.Debug("Sequence:PlayAnimateOut called - state=" .. self.state)
+	if self.state ~= "waitingOut" then
+		Log.Debug("Sequence:PlayAnimateOut skipped - not waitingOut")
+		return
+	end
 
 	self.state = "animatingOut"
 	self.OnAnimateOutStarted:Emit()
 
-	if self.animateOut and self.animateOut.Play then
+	-- Priority: timelineOut asset > animateOut node > immediate finish
+	local timelinePlayer = self:GetTimelinePlayer()
+	if self.timelineOut and timelinePlayer then
+		Log.Debug("Sequence:PlayAnimateOut playing timelineOut asset")
+		self.currentTimeline = "out"
+		timelinePlayer:SetTimeline(self.timelineOut)
+		timelinePlayer:Play()
+	elseif self.animateOut and self.animateOut.Play then
+		Log.Debug("Sequence:PlayAnimateOut playing animateOut node")
 		self.animateOut:Play()
 	else
+		Log.Debug("Sequence:PlayAnimateOut no timeline, calling OnAnimationOutFinished")
 		self:OnAnimationOutFinished()
 	end
 end
 
 function ShootingGallerySequence:Tick(deltaTime)
 	if self.state == "playing" then
+		-- Check if all targets collected
+		if self:AreAllTargetsCollected() then
+			Log.Debug("Sequence: All targets collected!")
+			self.state = "waitingOut"
+			self:PlayAnimateOut()
+			return
+		end
+
+		-- Otherwise count down timer
 		self.sequenceGameTime = self.sequenceGameTime - deltaTime
 		if self.sequenceGameTime <= 0 then
 			self.sequenceGameTime = 0
@@ -97,8 +163,26 @@ function ShootingGallerySequence:Tick(deltaTime)
 	end
 end
 
+function ShootingGallerySequence:AreAllTargetsCollected()
+	local targets = self.registeredTargets
+	if not targets or #targets == 0 then
+		return false
+	end
+
+	for _, target in ipairs(targets) do
+		if target.IsCollected then
+			if not target:IsCollected() then
+				return false
+			end
+		elseif target.collected ~= true then
+			return false
+		end
+	end
+
+	return true
+end
+
 function ShootingGallerySequence:AnimateInTargets()
-	Log.Debug("Sequence:AnimateInTargets called")
 
 	-- Use registered targets (scripts that registered themselves)
 	local targets = self.registeredTargets
@@ -107,17 +191,32 @@ function ShootingGallerySequence:AnimateInTargets()
 		return
 	end
 
-	Log.Debug("Sequence:AnimateInTargets - " .. #targets .. " registered targets")
 	for i, target in ipairs(targets) do
 		local name = target.GetName and target:GetName() or "unknown"
-		Log.Debug("Sequence:AnimateInTargets - target " .. i .. ": " .. name)
 
 		if target.ResetForGame then
 			target:ResetForGame()
 		end
 		if target.PlayAnimateIn then
-			Log.Debug("Sequence:AnimateInTargets - calling PlayAnimateIn on " .. name)
 			target:PlayAnimateIn()
+		end
+	end
+end
+
+function ShootingGallerySequence:AnimateOutTargets()
+
+	-- Use registered targets (scripts that registered themselves)
+	local targets = self.registeredTargets
+	if not targets or #targets == 0 then
+		Log.Debug("Sequence:AnimateOutTargets - no registered targets!")
+		return
+	end
+
+	for i, target in ipairs(targets) do
+		local name = target.GetName and target:GetName() or "unknown"
+
+		if target.PlayAnimateOut then
+			target:PlayAnimateOut()
 		end
 	end
 end
@@ -126,6 +225,8 @@ end
 function ShootingGallerySequence:OnAnimationInFinished()
 	Log.Debug("Sequence:OnAnimationInFinished called - state=" .. self.state)
 	if self.state ~= "animatingIn" then return end
+	-- Animate targets in
+	self:AnimateInTargets()
 
 	self.state = "playing"
 	Log.Debug("Sequence:OnAnimationInFinished - now playing")
@@ -134,11 +235,17 @@ end
 
 --- Call this when animateOut timeline finishes
 function ShootingGallerySequence:OnAnimationOutFinished()
-	if self.state ~= "animatingOut" then return end
-
+	Log.Debug("Sequence:OnAnimationOutFinished called - state=" .. self.state)
+	if self.state ~= "animatingOut" then
+		Log.Debug("Sequence:OnAnimationOutFinished skipped - not animatingOut")
+		return
+	end
+	self:AnimateOutTargets()
 	self.state = "complete"
+	Log.Debug("Sequence:OnAnimationOutFinished - emitting OnSequenceFinished")
 	self.OnAnimateOutFinished:Emit()
 	self.OnSequenceFinished:Emit()
+	Log.Debug("Sequence:OnAnimationOutFinished - done, state=" .. self.state)
 end
 
 --- Get remaining time
@@ -160,5 +267,7 @@ function ShootingGallerySequence:GatherProperties()
 		{ name = "animateOut", type = DatumType.Node },
 		{ name = "maxTime", type = DatumType.Integer },
 		{ name = "order", type = DatumType.Integer },
+		{ name = "timelineIn", type = DatumType.Asset },
+		{ name = "timelineOut", type = DatumType.Asset },
 	}
 end
