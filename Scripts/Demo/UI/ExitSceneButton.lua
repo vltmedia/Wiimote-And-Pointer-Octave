@@ -32,12 +32,10 @@ function ExitSceneButton:TryConnect()
 			Log.Warning("ExitSceneButton: No exitScene set")
 			return
 		end
-		Log.Debug("ExitSceneButton: Loading scene '" .. self.exitScene .. "'")
 		self.world:LoadScene(self.exitScene, self.instant or false)
 	end)
 	
 
-	Log.Debug("ExitSceneButton: Connected to interactable signals")
 
 	self.connected = true
 end

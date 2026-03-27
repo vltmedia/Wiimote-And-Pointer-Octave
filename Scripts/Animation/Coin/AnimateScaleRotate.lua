@@ -6,6 +6,7 @@
 ---@field endScale Vector
 ---@field animationTime number
 ---@field lerpStyle string
+---@field setStartTransform boolean
 ---@field OnFinished Signal
 AnimateScaleRotate = {}
 
@@ -25,11 +26,19 @@ function AnimateScaleRotate:Create()
 	self.OnFinished = Signal:Create()
 end
 
+function AnimateScaleRotate:Start()
+	if self.setStartTransform == true and self.objectToAnimate then
+		self.objectToAnimate:SetScale(self.startScale)
+		self.objectToAnimate:SetRotation(self.startRotation)
+	end
+end
 function AnimateScaleRotate:Play()
 	if not self.animating then
 		self.animating = true
 		self.lerpValue = 0
 		self.runtimeValue = 0
+		-- Apply start transform immediately to prevent flash
+		self:ApplyTransform(0)
 	end
 end
 
@@ -198,7 +207,8 @@ function AnimateScaleRotate:GatherProperties()
         { name = "startScale", type = DatumType.Vector },
         { name = "endScale", type = DatumType.Vector },
         { name = "animationTime", type = DatumType.Float, default = 1 },
-        { name = "lerpStyle", type = DatumType.String, default= "cubic" }
+        { name = "lerpStyle", type = DatumType.String, default= "cubic" },
+        { name = "setStartTransform", type = DatumType.Bool, default= false }
 
     }
 

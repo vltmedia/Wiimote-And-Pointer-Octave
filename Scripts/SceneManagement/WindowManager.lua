@@ -31,7 +31,6 @@ function WindowManager:Start()
 		self.firstWindowOpened = true  -- No first window specified
 	end
 
-	Log.Debug("WindowManager: Started with " .. self:GetWindowCount() .. " windows")
 end
 
 function WindowManager:Tick()
@@ -51,7 +50,6 @@ function WindowManager:TryOpenFirstWindow()
 	if self.windowsByName[self.firstWindow] then
 		self:OpenWindow(self.firstWindow)
 		self.firstWindowOpened = true
-		Log.Debug("WindowManager: Opened first window '" .. self.firstWindow .. "'")
 	end
 end
 
@@ -72,7 +70,6 @@ function WindowManager:RegisterWindow(window, windowName)
 		window:SetActive(false)
 	end
 
-	Log.Debug("WindowManager: Registered window '" .. windowName .. "'")
 end
 
 --- Open a window by name
@@ -119,7 +116,6 @@ function WindowManager:OpenWindow(windowName, closeOthers)
 	self.OnWindowLoaded:Emit(windowName, window)
 	self.OnWindowChanged:Emit(oldWindow, windowName)
 
-	Log.Debug("WindowManager: Opened window '" .. windowName .. "'")
 	return true
 end
 
@@ -165,7 +161,6 @@ function WindowManager:CloseWindow(windowName)
 
 	self.OnWindowUnloaded:Emit(windowName, window)
 
-	Log.Debug("WindowManager: Closed window '" .. windowName .. "'")
 	return true
 end
 
@@ -228,7 +223,6 @@ function WindowManager:CloseAllWindows()
 		self.OnWindowChanged:Emit(oldWindow, nil)
 	end
 
-	Log.Debug("WindowManager: Closed all windows")
 end
 
 --- Toggle a window open/closed

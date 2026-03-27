@@ -33,17 +33,16 @@ function ShootingGalleryUI:TryConnect()
 	end
 
 	-- Subscribe to score updates
-	self.manager.OnPlayerScore:Connect(self, function(playerData, target)
+	self.manager.OnPlayerScore:Connect(self, function(self, playerData, target)
 		self:UpdatePlayerScore(playerData)
 	end)
 
 	-- Subscribe to hit events for feedback
-	self.manager.OnHit:Connect(self, function(target)
-		self:ShowHitFeedback(target)
+	self.manager.OnHit:Connect(self, function(self, target, points)
+		self:ShowHitFeedback(target, points)
 	end)
 
 	self.connected = true
-	Log.Debug("ShootingGalleryUI: Connected to ShootingGalleryTargetManager")
 
 	-- Initialize scores
 	self:RefreshAllScores()
@@ -52,13 +51,13 @@ end
 ---@param playerData PlayerData
 function ShootingGalleryUI:UpdatePlayerScore(playerData)
 	local scoreText = self:GetScoreTextForPlayer(playerData.playerIndex)
+
 	if scoreText and scoreText.SetText then
-		if self:IsPlayerConnected(playerData.playerIndex) then
+
 			scoreText:SetText(playerData.name .. ": " .. tostring(playerData.score))
 		else
 			scoreText:SetText(playerData.name .. ": -")
 		end
-	end
 end
 
 ---@param playerIndex number
@@ -96,19 +95,19 @@ function ShootingGalleryUI:Tick()
 	end
 
 	-- Periodically refresh to detect controller connect/disconnect
-	self.refreshTimer = (self.refreshTimer or 0) + 1
-	if self.refreshTimer >= 60 then  -- Every ~1 second at 60fps
-		self.refreshTimer = 0
-		self:RefreshAllScores()
-	end
+	-- self.refreshTimer = (self.refreshTimer or 0) + 1
+	-- if self.refreshTimer >= 60 then  -- Every ~1 second at 60fps
+	-- 	self.refreshTimer = 0
+	-- 	self:RefreshAllScores()
+	-- end
 end
 
 ---@param target ShootingTargetItem
-function ShootingGalleryUI:ShowHitFeedback(target)
+function ShootingGalleryUI:ShowHitFeedback(target, points)
 	if self.hitFeedback and self.hitFeedback.SetText then
-		local points = target.score or 0
-		local sign = points >= 0 and "+" or ""
-		self.hitFeedback:SetText(sign .. tostring(points))
+		local pointsNum = tonumber(points)
+		local sign = pointsNum >= 0 and "+" or ""
+		self.hitFeedback:SetText(sign .. tostring(pointsNum))
 	end
 end
 

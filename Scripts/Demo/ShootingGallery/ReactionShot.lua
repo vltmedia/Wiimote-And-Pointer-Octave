@@ -14,7 +14,7 @@ function ReactionShot:Start()
 	self:TryConnect()
 end
 
-function ReactionShot:Tick()
+function ReactionShot:Tick(deltaTime)
 	if not self.connected then
 		self:TryConnect()
 	end
@@ -32,9 +32,11 @@ function ReactionShot:TryConnect()
 	end
 
 	self.interactable.OnPressed:Connect(self, function(player, button)
-		if button == Gamepad.A then
 			self.shootingTargetScript:Hit(player)
-		end
+			-- self.container:SetActive(false)
+			-- self.container:SetVisible(false)
+			Audio.PlaySound2D(self.shotSound, 1,1,0,false,0)
+
 	end)
 
 	self.interactable.OnReleased:Connect(self, function(player, button)
@@ -42,6 +44,7 @@ function ReactionShot:TryConnect()
 	end)
 
 	self.interactable.OnHoverStart:Connect(self, function(player)
+
 	end)
 
 	self.interactable.OnHoverEnd:Connect(self, function(player)
@@ -61,6 +64,9 @@ end
 
 function ReactionShot:GatherProperties()
 	return {
-		{ name = "shootingTargetScript", type = DatumType.Node }
+		{ name = "container", type = DatumType.Node },
+		{ name = "shootingTargetScript", type = DatumType.Node },
+		{ name = "itemName", type = DatumType.String },
+		{ name = "shotSound", type = DatumType.Asset },
 	}
 end

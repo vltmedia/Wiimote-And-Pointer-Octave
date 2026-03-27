@@ -22,7 +22,6 @@ function ShootingGalleryTargetManager:Create()
 	}
 	self.OnHit = Signal:Create()
 	self.OnPlayerScore = Signal:Create()
-	self.OnPlayerScore = Signal:Create()
 end
 
 ---@param shootingTarget ShootingTargetItem
@@ -35,14 +34,13 @@ end
 function ShootingGalleryTargetManager:Hit(player, shootingTarget)
 	local playerData = self.players[player]
 	if not playerData then
-		Log.Warning("ShootingGalleryTargetManager: Invalid player " .. tostring(player))
-		return
+		playerData = self.players[1]  -- Default to player 1
 	end
 
 	local points = shootingTarget:GetScore() or 0
 	playerData.score = playerData.score + points
 
-	self.OnHit:Emit(shootingTarget)
+	self.OnHit:Emit(shootingTarget,points)
 	self.OnPlayerScore:Emit(playerData, shootingTarget)
 end
 

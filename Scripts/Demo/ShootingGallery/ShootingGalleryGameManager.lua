@@ -3,6 +3,7 @@
 ---@field countdown Countdown
 ---@field endGameHandler Node
 ---@field state string
+---@field timelinePlayer TimelinePlayer
 ---@field currentSequenceIndex number
 ---@field sortedSequences ShootingGallerySequence[]
 ShootingGalleryGameManager = {}
@@ -15,7 +16,7 @@ function ShootingGalleryGameManager:Create()
 
 	self.OnGameStarted = Signal:Create()
 	self.OnGameEnded = Signal:Create()
-	self.OnSequenceChanged = Signal:Create()  -- (sequenceIndex, sequence)
+	self.OnSequenceChanged = Signal:Create()
 	self.OnCountdownStarted = Signal:Create()
 	self.OnCountdownFinished = Signal:Create()
 end
@@ -41,8 +42,6 @@ function ShootingGalleryGameManager:Start()
 			end)
 		end
 	end
-
-	Log.Debug("ShootingGalleryGameManager: Started with " .. #self.sortedSequences .. " sequences")
 end
 
 function ShootingGalleryGameManager:SortSequences()
@@ -50,12 +49,10 @@ function ShootingGalleryGameManager:SortSequences()
 
 	if not self.sequences then return end
 
-	-- Copy sequences to sortable array
 	for _, seq in ipairs(self.sequences) do
 		table.insert(self.sortedSequences, seq)
 	end
 
-	-- Sort by order property
 	table.sort(self.sortedSequences, function(a, b)
 		local orderA = a.order or 0
 		local orderB = b.order or 0
@@ -63,27 +60,25 @@ function ShootingGalleryGameManager:SortSequences()
 	end)
 end
 
---- Start the game (with optional countdown)
 function ShootingGalleryGameManager:Run()
-	if self.state ~= "idle" then
-		Log.Warning("ShootingGalleryGameManager: Cannot run, state is " .. self.state)
-		return
-	end
-
-	if #self.sortedSequences == 0 then
-		Log.Warning("ShootingGalleryGameManager: No sequences to play")
-		return
-	end
+	if self.state ~= "idle" then return end
+	if #self.sortedSequences == 0 then return end
 
 	self.OnGameStarted:Emit()
 
-	-- Start countdown if available, otherwise go straight to playing
 	if self.countdown and self.countdown.Start then
 		self.state = "countdown"
 		self.OnCountdownStarted:Emit()
 		self.countdown:Start()
 	else
 		self:StartFirstSequence()
+	end
+end
+
+function ShootingGalleryGameManager:PlayTimeline(timeline)
+	if self.timelinePlayer then
+		self.timelinePlayer:SetTimeline(timeline)
+		self.timelinePlayer:Play()
 	end
 end
 
@@ -102,13 +97,9 @@ end
 
 function ShootingGalleryGameManager:PlayCurrentSequence()
 	local sequence = self.sortedSequences[self.currentSequenceIndex]
-	if not sequence then
-		Log.Error("ShootingGalleryGameManager: No sequence at index " .. self.currentSequenceIndex)
-		return
-	end
+	if not sequence then return end
 
 	self.OnSequenceChanged:Emit(self.currentSequenceIndex, sequence)
-	Log.Debug("ShootingGalleryGameManager: Playing sequence " .. self.currentSequenceIndex)
 
 	if sequence.Play then
 		sequence:Play()
@@ -118,14 +109,10 @@ end
 function ShootingGalleryGameManager:OnCurrentSequenceFinished()
 	if self.state ~= "playing" then return end
 
-	Log.Debug("ShootingGalleryGameManager: Sequence " .. self.currentSequenceIndex .. " finished")
-
-	-- Check if there are more sequences
 	if self.currentSequenceIndex < #self.sortedSequences then
 		self.currentSequenceIndex = self.currentSequenceIndex + 1
 		self:PlayCurrentSequence()
 	else
-		-- All sequences complete
 		self:EndGame()
 	end
 end
@@ -134,9 +121,6 @@ function ShootingGalleryGameManager:EndGame()
 	self.state = "ended"
 	self.OnGameEnded:Emit()
 
-	Log.Debug("ShootingGalleryGameManager: Game ended")
-
-	-- Call end game handler if available
 	if self.endGameHandler then
 		if self.endGameHandler.OnGameEnded then
 			self.endGameHandler:OnGameEnded()
@@ -146,27 +130,21 @@ function ShootingGalleryGameManager:EndGame()
 	end
 end
 
---- Reset the game to play again
 function ShootingGalleryGameManager:Reset()
 	self.state = "idle"
 	self.currentSequenceIndex = 0
 
-	-- Reset all sequences
 	for _, sequence in ipairs(self.sortedSequences) do
 		if sequence.ResetForGame then
 			sequence:ResetForGame()
 		end
 	end
 
-	-- Reset countdown if available
 	if self.countdown and self.countdown.Reset then
 		self.countdown:Reset()
 	end
-
-	Log.Debug("ShootingGalleryGameManager: Reset")
 end
 
---- Get current sequence
 ---@return ShootingGallerySequence|nil
 function ShootingGalleryGameManager:GetCurrentSequence()
 	if self.currentSequenceIndex > 0 and self.currentSequenceIndex <= #self.sortedSequences then
@@ -175,19 +153,16 @@ function ShootingGalleryGameManager:GetCurrentSequence()
 	return nil
 end
 
---- Get total sequence count
 ---@return number
 function ShootingGalleryGameManager:GetSequenceCount()
 	return #self.sortedSequences
 end
 
---- Check if game is running
 ---@return boolean
 function ShootingGalleryGameManager:IsRunning()
 	return self.state == "playing" or self.state == "countdown"
 end
 
---- Check if game has ended
 ---@return boolean
 function ShootingGalleryGameManager:HasEnded()
 	return self.state == "ended"
@@ -198,5 +173,6 @@ function ShootingGalleryGameManager:GatherProperties()
 		{ name = "sequences", type = DatumType.Node, array = true },
 		{ name = "countdown", type = DatumType.Node },
 		{ name = "endGameHandler", type = DatumType.Node },
+		{ name = "timelinePlayer", type = DatumType.Node },
 	}
 end

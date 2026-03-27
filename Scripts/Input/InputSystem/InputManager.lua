@@ -18,12 +18,8 @@ end
 
 function InputManager:GetWorldCamera()
 	-- Get active camera from main world
-	local world = Engine.GetWorld(0)
-	if world then
-		self.camera = world:GetActiveCamera()
-		return self.camera
-	end
-	return nil
+	self.camera = self.world:GetActiveCamera()
+	return self.camera
 end
 
 function InputManager:RegisterInputPointer(InputPointer)
@@ -52,7 +48,6 @@ function InputManager:Start()
 		InputManager.Instance = self
 	end
 	Renderer.EnableConsole(true)
-	Log.Debug("Inputmote Manager Started")
 end
 
 function InputManager:Tick()

@@ -28,7 +28,6 @@ function Countdown:Start()
 	self.OnStarted:Emit()
 	self:UpdateDisplay()
 
-	Log.Debug("Countdown: Started (" .. self.duration .. " seconds)")
 end
 
 function Countdown:Stop()
@@ -62,7 +61,6 @@ function Countdown:Tick(deltaTime)
 		self.state = "finished"
 		self:UpdateDisplay()
 		self.OnFinished:Emit()
-		Log.Debug("Countdown: Finished")
 	end
 end
 

@@ -6,7 +6,8 @@
 ---@field world World
 ---@field animateIn Node
 ---@field animateOut Node
----@field dataAsset Asset
+---@field score Integer
+---@field health Integer
 ---@field state string
 ShootingTargetItem = {}
 
@@ -30,7 +31,17 @@ function ShootingTargetItem:Start()
 		self.manager:Register(self)
 	end
 
-	-- Connect to animation finished signals
+	-- Find parent sequence by traversing up hierarchy
+	local parent = self:GetParent()
+	while parent do
+		if parent.RegisterTarget then
+			parent:RegisterTarget(self)
+			break
+		end
+		parent = parent:GetParent()
+	end
+
+	-- Connect to animation finished signals (Lua scripts use .OnFinished:Connect)
 	if self.animateIn and self.animateIn.OnFinished then
 		self.animateIn.OnFinished:Connect(self, function()
 			self:OnAnimateInComplete()
@@ -42,23 +53,25 @@ function ShootingTargetItem:Start()
 		end)
 	end
 end
+
 function ShootingTargetItem:GetScore()
-	return self.dataAsset:Get("score")
+	local scoreValue = tonumber(self.score)
+	if scoreValue and scoreValue > 0 then
+		return scoreValue
+	end
+	return 100
 end
 
 function ShootingTargetItem:GetTargetName()
-	return self.dataAsset:Get("targetName")
+	return self.targetName or "Target"
 end
 
 function ShootingTargetItem:GetHealth()
-	return self.dataAsset:Get("health")
+	return self.health or 1
 end
 
 function ShootingTargetItem:GetDescription()
-	return self.dataAsset:Get("description")
-end
-function ShootingTargetItem:GetHitSound()
-	return self.dataAsset:Get("hitSound")
+	return self.description or ""
 end
 
 function ShootingTargetItem:PlayAnimateIn()
@@ -67,10 +80,9 @@ function ShootingTargetItem:PlayAnimateIn()
 	self.state = "animatingIn"
 	self.OnAnimateInStarted:Emit()
 
-	if self.animateIn and self.animateIn.Play then
+	if self.animateIn then
 		self.animateIn:Play()
 	else
-		-- No animation, go straight to active
 		self:OnAnimateInComplete()
 	end
 end
@@ -88,10 +100,9 @@ function ShootingTargetItem:PlayAnimateOut()
 	self.state = "animatingOut"
 	self.OnAnimateOutStarted:Emit()
 
-	if self.animateOut and self.animateOut.Play then
+	if self.animateOut then
 		self.animateOut:Play()
 	else
-		-- No animation, go straight to collected
 		self:OnAnimateOutComplete()
 	end
 end
@@ -107,7 +118,6 @@ function ShootingTargetItem:ResetForGame()
 	self.collected = false
 	self.state = "hidden"
 
-	-- Reset animations if they have Reset
 	if self.animateIn and self.animateIn.Reset then
 		self.animateIn:Reset()
 	end
@@ -123,29 +133,34 @@ end
 function ShootingTargetItem:IsCollected()
 	return self.collected or self.state == "collected"
 end
+
 function ShootingTargetItem:GatherProperties()
 	return {
-		{name="dataAsset", type=DatumType.Asset },
-		{name="animateIn", type=DatumType.Node },
-		{name="animateOut", type=DatumType.Node },
+		{ name = "targetName", type = DatumType.String },
+		{ name = "score", type = DatumType.Integer, default = 100 },
+		{ name = "health", type = DatumType.Integer, default = 1 },
+		{ name = "animateIn", type = DatumType.Node },
+		{ name = "animateOut", type = DatumType.Node },
 	}
 end
 
 ---@param player number
 function ShootingTargetItem:Hit(player)
-	-- Only allow hits when active
 	if self.state ~= "active" then return end
 	if self.collected then return end
 
-	self.collected = true
-	self.OnHit:Emit(player)
+	-- Ensure player is a number (default to 1 if invalid)
+	if type(player) ~= "number" then
+		player = 1
+	end
 
-	-- Notify manager
+	self.collected = true
+
+	self.OnHit:Emit(player, self.score)
+
 	if self.manager and self.manager.Hit then
 		self.manager:Hit(player, self)
 	end
 
-	-- Play out animation
 	self:PlayAnimateOut()
 end
-

@@ -40,7 +40,6 @@ function ReactionToggleVisibility:TryConnect()
 		self.widget:SetVisible(false)
 	end)
 
-	Log.Debug("ReactionToggleVisibility: Connected to interactable signals")
 
 	self.connected = true
 end
