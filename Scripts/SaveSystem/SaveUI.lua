@@ -44,7 +44,9 @@ function SaveUI:Start()
 end
 
 function SaveUI:OnNewButtonClicked()
-    WindowManager.ShowWindow("save.create.new")
+    -- WindowManager.HideWindow("save.Window")
+
+    -- WindowManager.ShowWindow("save.create.new")
     -- local slotIndex = self.saveManager:CreateNewSave()
     -- if slotIndex then
     --     self:RefreshSaveList()
@@ -68,6 +70,7 @@ function SaveUI:GatherProperties()
     return {
         {name="saveManager", type=DatumType.Widget },
         {name="createSaveUI", type=DatumType.Widget },
+        {name="createSaveWindowName", type=DatumType.String },
         {name="listView", type=DatumType.Widget },
         {name="saveButton", type=DatumType.Widget },
         {name="loadButton", type=DatumType.Widget },
@@ -80,7 +83,7 @@ end
 -- Refresh the save list display
 function SaveUI:RefreshSaveList()
     local slots =self.saveManager:GetAllSaveSlots()
-    self.listView:SetData(slots)
+    self:SetData(slots)
 end
 
 -- Called by ListView when an item is created
@@ -93,6 +96,18 @@ function SaveUI:OnItemGenerate(index, data, item)
     end
     -- Find and set the title text
     content:GenerateItem(data)
+    content:SetIndex(index)
+    content.OnSelected:Connect(self,self.OnItemSelected)
+end
+
+function SaveUI:OnItemSelected(item)
+    self.saveManager:SetSelectedSlot(item)
+    if item.isEmpty then
+        self.createSaveUI:UpdateIcons()
+        WindowManager.ShowWindow(self.createSaveWindowName)
+        WindowManager.HideWindow("save.Window")
+    end
+
 end
 
 -- Called when selection changes

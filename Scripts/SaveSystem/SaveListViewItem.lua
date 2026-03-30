@@ -2,6 +2,9 @@ SaveListViewItem = {}
 
 function SaveListViewItem:GatherProperties()
 	return {
+		{name="emptyWidget", type=DatumType.Widget },
+		{name="dataWidget", type=DatumType.Widget },
+		{name="background", type=DatumType.Widget },
 		{name="icon", type=DatumType.Quad },
 		{name="nameText", type=DatumType.Widget },
 		{name="coinsText", type=DatumType.Widget },
@@ -9,11 +12,17 @@ function SaveListViewItem:GatherProperties()
 		{name="playtimeText", type=DatumType.Widget },
 		{name="dateText", type=DatumType.Widget },
 		{name="locationText", type=DatumType.Widget },
+		{name="normalColor", type=DatumType.Color },
+		{name="selectedColor", type=DatumType.Color },
 	}
 end
 
 function SaveListViewItem:Create()
 	self.OnRun = Signal:Create()
+	self.OnSelected = Signal:Create()
+    self.index = 0
+    self.isSelected = false
+    self.isEmpty = false
 end
 
 function SaveListViewItem:Start()
@@ -21,18 +30,32 @@ function SaveListViewItem:Start()
     
 
 end
+
+function SaveListViewItem:SetIndex(index)
+
+    self.index = index
+
+end
+function SaveListViewItem:SetSelected(empty)
+    self.isSelected = true
+    self.isEmpty = empty
+    self.OnSelected:Emit(self)
+end
+
 function SaveListViewItem:GenerateItem(data)
+
+    self.isEmpty = data.isEmpty
+
 	if data.isEmpty then
-        -- Empty slot display
-        if self.nameText then self.nameText:SetText("Empty Slot") end
-        if self.coinsText then self.coinsText:SetText("") end
-        if self.levelText then self.levelText:SetText("") end
-        if self.starsText then self.starsText:SetText("") end
-        if self.playtimeText then self.playtimeText:SetText("") end
-        if self.dateText then self.dateText:SetText("") end
-        if self.locationText then self.locationText:SetText("") end
-        if self.icon then self.icon:SetColor({0.3, 0.3, 0.3, 0.5}) end
+        self.dataWidget:SetActive(false)
+        self.dataWidget:SetVisible(false)
+        self.emptyWidget:SetActive(true)
+        self.emptyWidget:SetVisible(true)
     else
+        self.dataWidget:SetActive(true)
+        self.dataWidget:SetVisible(true)
+        self.emptyWidget:SetActive(false)
+        self.emptyWidget:SetVisible(false)
         -- Populated slot display
         if self.nameText then self.nameText:SetText(data.name) end
         if self.coinsText then self.coinsText:SetText(tostring(data.coins) .. " coins") end
@@ -58,17 +81,24 @@ end
 
 
 function SaveListViewItem:OnItemHoverEnter(data)
-		local c = data.color
-		self.background:SetColor(Vector:Create(
-			math.min(c.x + 0.2, 1.0),
-			math.min(c.y + 0.2, 1.0),
-			math.min(c.z + 0.2, 1.0),
-			c.w
-		))
+    if not self.background then return end
+    local baseColor = self.isSelected and (self.selectedColor or Vector:Create(0.3, 0.5, 0.8, 1.0))
+                                       or (self.normalColor or Vector:Create(0.2, 0.2, 0.2, 1.0))
+    self.background:SetColor(Vector:Create(
+        math.min(baseColor.x + 0.15, 1.0),
+        math.min(baseColor.y + 0.15, 1.0),
+        math.min(baseColor.z + 0.15, 1.0),
+        baseColor.w
+    ))
 end
 
 function SaveListViewItem:OnItemHoverExit(data)
-	self.background:SetColor(data.color)
+    if not self.background then return end
+    if self.isSelected then
+        self.background:SetColor(self.selectedColor or Vector:Create(0.3, 0.5, 0.8, 1.0))
+    else
+        self.background:SetColor(self.normalColor or Vector:Create(0.2, 0.2, 0.2, 1.0))
+    end
 end
 
 

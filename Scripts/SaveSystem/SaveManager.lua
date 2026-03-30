@@ -2,13 +2,22 @@
 -- Handles save/load operations using Octave's Stream-based serialization
 
 SaveManager = {}
-SaveManager.MAX_SLOTS = 5
-SaveManager.SAVE_PREFIX = "save_slot_"
+SaveManager.Instance = nil
 
+function SaveManager:GatherProperties()
+    return {
+        {name="savePrefix", type=DatumType.String, default = "save_slot_" },
+        {name="maxSlots", type=DatumType.Integer, default = 5 },
+    }
+end
+
+function SaveManager:Start()
+    SaveManager.Instance = self
+end
 -- Read save data from a slot
 -- Returns nil if slot is empty
 function SaveManager:GetSaveInfo(slotIndex)
-    local saveName = self.SAVE_PREFIX .. tostring(slotIndex)
+    local saveName = self.savePrefix .. tostring(slotIndex)
     if not System.DoesSaveExist(saveName) then
         return nil
     end
@@ -31,7 +40,7 @@ end
 
 -- Write save data to a slot
 function SaveManager:WriteSave(slotIndex, data)
-    local saveName = self.SAVE_PREFIX .. tostring(slotIndex)
+    local saveName = self.savePrefix .. tostring(slotIndex)
     local stream = Stream()
 
     stream:WriteString(data.name or "Player")
@@ -48,22 +57,28 @@ end
 
 -- Delete a save slot
 function SaveManager:DeleteSave(slotIndex)
-    local saveName = self.SAVE_PREFIX .. tostring(slotIndex)
+    local saveName = self.savePrefix .. tostring(slotIndex)
     if System.DoesSaveExist(saveName) then
         System.DeleteSave(saveName)
     end
 end
 
+
+function SaveManager:Create()
+    self.selectedSlot = nil
+end
+
+
 -- Check if a save slot exists
 function SaveManager:DoesSaveExist(slotIndex)
-    local saveName = self.SAVE_PREFIX .. tostring(slotIndex)
+    local saveName = self.savePrefix .. tostring(slotIndex)
     return System.DoesSaveExist(saveName)
 end
 
 -- Get all save slots (empty or populated)
 function SaveManager:GetAllSaveSlots()
     local slots = {}
-    for i = 1, self.MAX_SLOTS do
+    for i = 1, self.maxSlots do
         local info = self:GetSaveInfo(i)
         if info then
             info.slotIndex = i
@@ -74,6 +89,10 @@ function SaveManager:GetAllSaveSlots()
         table.insert(slots, info)
     end
     return slots
+end
+
+function SaveManager:SetSelectedSlot(slot)
+    self.selectedSlot = slot
 end
 
 -- Format playtime in seconds to "Xh Xm" string
