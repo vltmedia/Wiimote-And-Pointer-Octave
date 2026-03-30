@@ -22,6 +22,8 @@ function CreateSaveUI:Start()
     end
     self.iconSelectDialog:ConnectSignal("Confirm", self, function ()
         Log.Debug(self.nameGenDialog:GetWindowId())
+        self.nameAdjectiveDropdown:SetRandom()
+        self.nameNounDropdown:SetRandom()
         WindowManager.ShowWindow(tostring(self.nameGenDialog:GetWindowId()))
         WindowManager.HideWindow(self.iconSelectDialog:GetWindowId())
     end)
@@ -44,8 +46,13 @@ function CreateSaveUI:Start()
         WindowManager.HideWindow(self.nameGenDialog:GetWindowId())
     end)
     self.namePreviewDialog:ConnectSignal("Reject", self, function ()
+        
         WindowManager.ShowWindow(self.nameGenDialog:GetWindowId())
         WindowManager.HideWindow(self.namePreviewDialog:GetWindowId())
+    end)
+    self.randomizeNameButton:ConnectSignal("Activated", self, function ()
+        self.nameAdjectiveDropdown:SetRandom()
+        self.nameNounDropdown:SetRandom()
     end)
     self.icon1:ConnectSignal("Activated", self, function ()
         self.selected = 0
@@ -166,6 +173,7 @@ function CreateSaveUI:GatherProperties()
         {name="iconSelectDialog", type=DatumType.Widget },
         {name="nameGenDialog", type=DatumType.Widget },
         {name="namePreviewDialog", type=DatumType.Widget },
+        {name="randomizeNameButton", type=DatumType.Widget },
         {name="lineEdit", type=DatumType.Widget }
     }
 end

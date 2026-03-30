@@ -100,8 +100,13 @@ function NameGenerator:GetAdjectives()
 	return Adjectives
 end
 function NameGenerator:GetNouns()
-	return Adjectives
+	return Nouns
 end
+
+
+
+
+
 
 -- Main generator
 -- opts = {

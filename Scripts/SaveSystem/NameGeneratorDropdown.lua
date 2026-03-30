@@ -18,6 +18,15 @@ function NameGeneratorDropdown:ApplyOptions(options)
 	end
 end
 
+
+function NameGeneratorDropdown:SetRandom()
+	local randomItem = math.random(0, self:GetOptionCount())
+	self:SetSelectedIndex(randomItem)
+end
+
+
+
+
 function NameGeneratorDropdown:Start()
 
 	if self.dropdownType == "adjective" then
@@ -25,6 +34,7 @@ function NameGeneratorDropdown:Start()
 	else
 		self:ApplyOptions(self.nameGenerator:GetNouns())
 	end
+	self:SetRandom()
 end
 function NameGeneratorDropdown:Tick(deltaTime)
 
