@@ -21,7 +21,7 @@ function WindowWidget:TryRegister()
 	if self.registered then return end
 
 	-- Find manager
-	local manager = self.windowManager or WindowManager.Instance
+	local manager = self.windowManager or CustomWindowManager.Instance
 	if not manager or not manager.RegisterWindow then
 		return
 	end
@@ -42,13 +42,13 @@ function WindowWidget:TryRegister()
 
 end
 
---- Called by WindowManager when this window is opened
+--- Called by CustomWindowManager when this window is opened
 function WindowWidget:OnWindowOpened()
 	self.isOpen = true
 	self.OnOpened:Emit()
 end
 
---- Called by WindowManager when this window is closed
+--- Called by CustomWindowManager when this window is closed
 function WindowWidget:OnWindowClosed()
 	self.isOpen = false
 	self.OnClosed:Emit()
@@ -62,7 +62,7 @@ end
 
 --- Open this window via the manager
 function WindowWidget:Open(closeOthers)
-	local manager = self.windowManager or WindowManager.Instance
+	local manager = self.windowManager or CustomWindowManager.Instance
 	if manager and manager.OpenWindow and self.registeredName then
 		manager:OpenWindow(self.registeredName, closeOthers)
 	end
@@ -70,7 +70,7 @@ end
 
 --- Close this window via the manager
 function WindowWidget:Close()
-	local manager = self.windowManager or WindowManager.Instance
+	local manager = self.windowManager or CustomWindowManager.Instance
 	if manager and manager.CloseWindow and self.registeredName then
 		manager:CloseWindow(self.registeredName)
 	end
@@ -78,7 +78,7 @@ end
 
 --- Toggle this window via the manager
 function WindowWidget:Toggle()
-	local manager = self.windowManager or WindowManager.Instance
+	local manager = self.windowManager or CustomWindowManager.Instance
 	if manager and manager.ToggleWindow and self.registeredName then
 		manager:ToggleWindow(self.registeredName)
 	end

@@ -1,7 +1,7 @@
-WindowManager = {}
-WindowManager.Instance = nil
+CustomWindowManager = {}
+CustomWindowManager.Instance = nil
 
-function WindowManager:Create()
+function CustomWindowManager:Create()
 	self.OnWindowUnloadRequested = Signal:Create()
 	self.OnWindowUnloaded = Signal:Create()
 	self.OnWindowLoadRequested = Signal:Create()
@@ -13,8 +13,8 @@ function WindowManager:Create()
 	self.activeWindow = nil
 end
 
-function WindowManager:Start()
-	WindowManager.Instance = self
+function CustomWindowManager:Start()
+	CustomWindowManager.Instance = self
 
 	-- Index pre-assigned windows by name
 	if self.windows then
@@ -33,13 +33,13 @@ function WindowManager:Start()
 
 end
 
-function WindowManager:Tick()
+function CustomWindowManager:Tick()
 	if not self.firstWindowOpened then
 		self:TryOpenFirstWindow()
 	end
 end
 
-function WindowManager:TryOpenFirstWindow()
+function CustomWindowManager:TryOpenFirstWindow()
 	if self.firstWindowOpened then return end
 	if not self.firstWindow or self.firstWindow == "" then
 		self.firstWindowOpened = true
@@ -56,7 +56,7 @@ end
 --- Register a window with the manager
 ---@param window Widget The window widget to register
 ---@param windowName string|nil Optional name (defaults to node name)
-function WindowManager:RegisterWindow(window, windowName)
+function CustomWindowManager:RegisterWindow(window, windowName)
 	if not window then return end
 
 	windowName = windowName or (window.GetName and window:GetName()) or tostring(window)
@@ -76,15 +76,15 @@ end
 ---@param windowName string
 ---@param closeOthers boolean|nil If true, close all other windows first
 ---@return boolean success
-function WindowManager:OpenWindow(windowName, closeOthers)
+function CustomWindowManager:OpenWindow(windowName, closeOthers)
 	if not windowName or windowName == "" then
-		Log.Warning("WindowManager: OpenWindow called with nil or empty name")
+		Log.Warning("CustomWindowManager: OpenWindow called with nil or empty name")
 		return false
 	end
 
 	local window = self.windowsByName[windowName]
 	if not window then
-		Log.Warning("WindowManager: Window '" .. windowName .. "' not found")
+		Log.Warning("CustomWindowManager: Window '" .. windowName .. "' not found")
 		return false
 	end
 
@@ -122,15 +122,15 @@ end
 --- Close a window by name
 ---@param windowName string
 ---@return boolean success
-function WindowManager:CloseWindow(windowName)
+function CustomWindowManager:CloseWindow(windowName)
 	if not windowName or windowName == "" then
-		Log.Warning("WindowManager: CloseWindow called with nil or empty name")
+		Log.Warning("CustomWindowManager: CloseWindow called with nil or empty name")
 		return false
 	end
 
 	local window = self.windowsByName[windowName]
 	if not window then
-		Log.Warning("WindowManager: Window '" .. windowName .. "' not found")
+		Log.Warning("CustomWindowManager: Window '" .. windowName .. "' not found")
 		return false
 	end
 
@@ -168,9 +168,9 @@ end
 ---@param windowIndex number
 ---@param closeOthers boolean|nil
 ---@return boolean success
-function WindowManager:OpenWindowByIndex(windowIndex, closeOthers)
+function CustomWindowManager:OpenWindowByIndex(windowIndex, closeOthers)
 	if not self.windows or windowIndex < 1 or windowIndex > #self.windows then
-		Log.Warning("WindowManager: Invalid window index " .. windowIndex)
+		Log.Warning("CustomWindowManager: Invalid window index " .. windowIndex)
 		return false
 	end
 
@@ -183,9 +183,9 @@ end
 --- Close a window by index (1-based)
 ---@param windowIndex number
 ---@return boolean success
-function WindowManager:CloseWindowByIndex(windowIndex)
+function CustomWindowManager:CloseWindowByIndex(windowIndex)
 	if not self.windows or windowIndex < 1 or windowIndex > #self.windows then
-		Log.Warning("WindowManager: Invalid window index " .. windowIndex)
+		Log.Warning("CustomWindowManager: Invalid window index " .. windowIndex)
 		return false
 	end
 
@@ -196,7 +196,7 @@ function WindowManager:CloseWindowByIndex(windowIndex)
 end
 
 --- Close all open windows
-function WindowManager:CloseAllWindows()
+function CustomWindowManager:CloseAllWindows()
 	-- Close in reverse order (top of stack first)
 	for i = #self.windowStack, 1, -1 do
 		local windowName = self.windowStack[i]
@@ -228,7 +228,7 @@ end
 --- Toggle a window open/closed
 ---@param windowName string
 ---@return boolean isNowOpen
-function WindowManager:ToggleWindow(windowName)
+function CustomWindowManager:ToggleWindow(windowName)
 	if self:IsWindowOpen(windowName) then
 		self:CloseWindow(windowName)
 		return false
@@ -241,7 +241,7 @@ end
 --- Check if a window is currently open
 ---@param windowName string
 ---@return boolean
-function WindowManager:IsWindowOpen(windowName)
+function CustomWindowManager:IsWindowOpen(windowName)
 	for _, name in ipairs(self.windowStack) do
 		if name == windowName then
 			return true
@@ -252,20 +252,20 @@ end
 
 --- Get the currently active window name
 ---@return string|nil
-function WindowManager:GetActiveWindow()
+function CustomWindowManager:GetActiveWindow()
 	return self.activeWindow
 end
 
 --- Get a window by name
 ---@param windowName string
 ---@return Widget|nil
-function WindowManager:GetWindow(windowName)
+function CustomWindowManager:GetWindow(windowName)
 	return self.windowsByName[windowName]
 end
 
 --- Get window count
 ---@return number
-function WindowManager:GetWindowCount()
+function CustomWindowManager:GetWindowCount()
 	local count = 0
 	for _ in pairs(self.windowsByName) do
 		count = count + 1
@@ -274,14 +274,14 @@ function WindowManager:GetWindowCount()
 end
 
 --- Internal: Push window to stack
-function WindowManager:PushWindowToStack(windowName)
+function CustomWindowManager:PushWindowToStack(windowName)
 	-- Remove if already in stack (will re-add at top)
 	self:RemoveWindowFromStack(windowName)
 	table.insert(self.windowStack, windowName)
 end
 
 --- Internal: Remove window from stack
-function WindowManager:RemoveWindowFromStack(windowName)
+function CustomWindowManager:RemoveWindowFromStack(windowName)
 	for i, name in ipairs(self.windowStack) do
 		if name == windowName then
 			table.remove(self.windowStack, i)
@@ -290,7 +290,7 @@ function WindowManager:RemoveWindowFromStack(windowName)
 	end
 end
 
-function WindowManager:GatherProperties()
+function CustomWindowManager:GatherProperties()
 	return {
 		{ name = "windows", type = DatumType.Widget, array = true },
 		{ name = "firstWindow", type = DatumType.String	},

@@ -3,16 +3,18 @@ OpenWindowButton = {}
 
 function OpenWindowButton:OnActivated()
 
-	if self.windowManager then
-		self.windowManager:OpenWindow(self.windowName, true)
+	WindowManager.ShowWindow(self.windowName)
+	if self.thisWindowName ~= "" then
+	WindowManager.HideWindow(self.thisWindowName)
 	end
+
 end
 
 
 
 function OpenWindowButton:GatherProperties()
 	return {
-{name="windowManager", type=DatumType.Widget},
+{name="thisWindowName", type=DatumType.String	},
 {name="windowName", type=DatumType.String	}
 
 	}
